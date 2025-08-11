@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Search, Plus, Edit2, Trash2, Eye, Filter, ArrowUpDown } from 'lucide-react';
+import './App.css';
 
 // Types
 interface Job {
