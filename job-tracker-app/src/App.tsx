@@ -134,6 +134,14 @@ const JobTracker: React.FC = () => {
     }
   }, [urlParams.jobId, jobs]);
 
+  // Load user from localStorage on mount
+  useEffect(() => {
+    const storedUser = localStorage.getItem('currentUser');
+    if (storedUser) {
+      setCurrentUser(JSON.parse(storedUser));
+    }
+  }, []);
+
   const loadJobs = async () => {
     if (!currentUser) return;
     const data = await apiCall(`/jobs?userId=${currentUser.id}`);
@@ -150,6 +158,7 @@ const JobTracker: React.FC = () => {
     if (users && users.length > 0) {
       const user = users[0];
       setCurrentUser(user);
+      localStorage.setItem('currentUser', JSON.stringify(user)); // <-- Save to localStorage
       updateURL({ page: 'home' });
       setLoginForm({ username: '', password: '' });
     } else {
@@ -181,6 +190,7 @@ const JobTracker: React.FC = () => {
 
   const handleLogout = () => {
     setCurrentUser(null);
+    localStorage.removeItem('currentUser'); // <-- Remove from localStorage
     updateURL({ page: 'landing' });
   };
 

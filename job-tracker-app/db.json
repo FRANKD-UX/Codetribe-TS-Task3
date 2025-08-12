@@ -1,6 +1,21 @@
 {
   "jobs": [
-    { "id": 1, "title": "Frontend Developer", "company": "Codetribe" },
-    { "id": 2, "title": "Backend Developer", "company": "Tech Corp" }
+    {
+      "id": "1",
+      "title": "Frontend Developer",
+      "company": "Codetribe"
+    },
+    {
+      "id": "2",
+      "title": "Backend Developer",
+      "company": "Tech Corp"
+    }
+  ],
+  "users": [
+    {
+      "id": "ba1f",
+      "username": "frank",
+      "password": "123456"
+    }
   ]
 }
