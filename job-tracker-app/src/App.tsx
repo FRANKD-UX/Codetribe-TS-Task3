@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Plus, Edit2, Trash2, Eye, Filter, ArrowUpDown } from 'lucide-react';
-import './App.css';
+import './App.css'; 
 
 // Types
 interface Job {
@@ -17,21 +16,21 @@ interface Job {
 }
 
 interface User {
-  id?: number;
+  id: number;
   username: string;
   password: string;
 }
 
 interface URLParams {
   page: string;
-  search?: string;
-  filter?: string;
-  sort?: string;
+  search: string;
+  filter: string;
+  sort: string;
   jobId?: string;
 }
 
 const JobTracker: React.FC = () => {
-  // JSON Server base URL - you'll need to start json-server on port 3001
+  // JSON Server base URL - ensure json-server is running on port 3001
   const API_BASE = 'http://localhost:3001';
 
   // State management
@@ -53,10 +52,10 @@ const JobTracker: React.FC = () => {
   // Form states
   const [loginForm, setLoginForm] = useState({ username: '', password: '' });
   const [registerForm, setRegisterForm] = useState({ username: '', password: '' });
-  const [jobForm, setJobForm] = useState({
+  const [jobForm, setJobForm] = useState<Omit<Job, 'id' | 'userId'>>({
     companyName: '',
     role: '',
-    status: 'Applied' as Job['status'],
+    status: 'Applied',
     dateApplied: '',
     jobDuties: '',
     requirements: '',
@@ -117,18 +116,6 @@ const JobTracker: React.FC = () => {
     }
   };
 
-  // Load user session and jobs
-  useEffect(() => {
-    const savedUser = localStorage.getItem('currentUser');
-    if (savedUser) {
-      const user = JSON.parse(savedUser);
-      setCurrentUser(user);
-      if (urlParams.page === 'landing' || urlParams.page === 'login') {
-        updateURL({ page: 'home' });
-      }
-    }
-  }, []);
-
   // Load jobs when user changes
   useEffect(() => {
     if (currentUser) {
@@ -163,7 +150,6 @@ const JobTracker: React.FC = () => {
     if (users && users.length > 0) {
       const user = users[0];
       setCurrentUser(user);
-      localStorage.setItem('currentUser', JSON.stringify(user));
       updateURL({ page: 'home' });
       setLoginForm({ username: '', password: '' });
     } else {
@@ -195,7 +181,6 @@ const JobTracker: React.FC = () => {
 
   const handleLogout = () => {
     setCurrentUser(null);
-    localStorage.removeItem('currentUser');
     updateURL({ page: 'landing' });
   };
 
@@ -277,14 +262,14 @@ const JobTracker: React.FC = () => {
   };
 
   // Filter and sort jobs based on URL parameters
-  const getFilteredJobs = () => {
+  const getFilteredJobs = (): Job[] => {
     let filteredJobs = [...jobs];
 
     // Apply search filter
     if (urlParams.search) {
       filteredJobs = filteredJobs.filter(job =>
-        job.companyName.toLowerCase().includes(urlParams.search!.toLowerCase()) ||
-        job.role.toLowerCase().includes(urlParams.search!.toLowerCase())
+        job.companyName.toLowerCase().includes(urlParams.search.toLowerCase()) ||
+        job.role.toLowerCase().includes(urlParams.search.toLowerCase())
       );
     }
 
@@ -303,32 +288,83 @@ const JobTracker: React.FC = () => {
     return filteredJobs;
   };
 
-  const getStatusColor = (status: Job['status']) => {
+  const getStatusClass = (status: string): string => {
     switch (status) {
-      case 'Applied': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-      case 'Interviewed': return 'bg-green-100 text-green-800 border-green-200';
-      case 'Rejected': return 'bg-red-100 text-red-800 border-red-200';
-      default: return 'bg-gray-100 text-gray-800 border-gray-200';
+      case 'Applied': return 'status-applied';
+      case 'Interviewed': return 'status-interviewed';
+      case 'Rejected': return 'status-rejected';
+      default: return 'status-applied';
     }
   };
 
+  // Icons
+  const SearchIcon = () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <circle cx="11" cy="11" r="8"></circle>
+      <path d="m21 21-4.35-4.35"></path>
+    </svg>
+  );
+
+  const PlusIcon = () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <line x1="12" y1="5" x2="12" y2="19"></line>
+      <line x1="5" y1="12" x2="19" y2="12"></line>
+    </svg>
+  );
+
+  const EditIcon = () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+    </svg>
+  );
+
+  const TrashIcon = () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <polyline points="3,6 5,6 21,6"></polyline>
+      <path d="m19,6v14a2,2 0 0,1 -2,2H7a2,2 0 0,1 -2,-2V6m3,0V4a2,2 0 0,1 2,-2h4a2,2 0 0,1 2,2v2"></path>
+    </svg>
+  );
+
+  const EyeIcon = () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+      <circle cx="12" cy="12" r="3"></circle>
+    </svg>
+  );
+
+  const FilterIcon = () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <polygon points="22,3 2,3 10,12.46 10,19 14,21 14,12.46 22,3"></polygon>
+    </svg>
+  );
+
+  const ArrowUpDownIcon = () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="m21,16-4,4-4,-4"></path>
+      <path d="m17,20V4"></path>
+      <path d="m3,8 4,-4 4,4"></path>
+      <path d="M7,4V20"></path>
+    </svg>
+  );
+
   // Component render functions
   const renderLandingPage = () => (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-      <nav className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex justify-between items-center">
-            <h1 className="text-2xl font-bold text-indigo-600">JobTracker Pro</h1>
-            <div className="space-x-4">
+    <div className="min-h-screen bg-gray-50">
+      <nav className="navbar">
+        <div className="container">
+          <div className="nav-content">
+            <h1 className="text-white font-bold">JobTracker Pro</h1>
+            <div className="flex gap-4">
               <button 
                 onClick={() => updateURL({ page: 'login' })}
-                className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 transition-colors"
+                className="btn btn-outline text-white border-white hover:bg-white hover:text-blue-600"
               >
                 Login
               </button>
               <button 
                 onClick={() => updateURL({ page: 'register' })}
-                className="border border-indigo-600 text-indigo-600 px-4 py-2 rounded-md hover:bg-indigo-50 transition-colors"
+                className="btn bg-white text-blue-600 hover:bg-gray-100"
               >
                 Register
               </button>
@@ -337,44 +373,44 @@ const JobTracker: React.FC = () => {
         </div>
       </nav>
 
-      <div className="max-w-4xl mx-auto px-4 py-16 text-center">
-        <h2 className="text-5xl font-bold text-gray-900 mb-6">
+      <div className="container hero-section">
+        <h2 className="hero-title">
           Track Your Job Applications Like a Pro
         </h2>
-        <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
+        <p className="hero-description">
           Stay organized and increase your chances of landing your dream job. 
           Keep track of applications, interviews, and follow-ups all in one place.
         </p>
         
-        <div className="grid md:grid-cols-3 gap-8 mt-16">
-          <div className="bg-white p-6 rounded-lg shadow-md">
-            <div className="bg-blue-100 p-3 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
-              <Plus className="text-blue-600" size={24} />
+        <div className="grid grid-auto-fit mt-6">
+          <div className="feature-card card">
+            <div className="feature-icon">
+              <PlusIcon />
             </div>
-            <h3 className="text-xl font-semibold mb-2">Easy Application Tracking</h3>
+            <h3 className="mb-2">Easy Application Tracking</h3>
             <p className="text-gray-600">Add job applications with detailed company information and track their status.</p>
           </div>
           
-          <div className="bg-white p-6 rounded-lg shadow-md">
-            <div className="bg-green-100 p-3 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
-              <Search className="text-green-600" size={24} />
+          <div className="feature-card card">
+            <div className="feature-icon">
+              <SearchIcon />
             </div>
-            <h3 className="text-xl font-semibold mb-2">Smart Search & Filter</h3>
+            <h3 className="mb-2">Smart Search & Filter</h3>
             <p className="text-gray-600">Quickly find applications by company name, role, or status.</p>
           </div>
           
-          <div className="bg-white p-6 rounded-lg shadow-md">
-            <div className="bg-purple-100 p-3 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
-              <ArrowUpDown className="text-purple-600" size={24} />
+          <div className="feature-card card">
+            <div className="feature-icon">
+              <ArrowUpDownIcon />
             </div>
-            <h3 className="text-xl font-semibold mb-2">Organize & Sort</h3>
+            <h3 className="mb-2">Organize & Sort</h3>
             <p className="text-gray-600">Sort applications by date and organize by status for better management.</p>
           </div>
         </div>
 
         <button 
           onClick={() => updateURL({ page: 'register' })}
-          className="mt-12 bg-indigo-600 text-white px-8 py-3 rounded-lg text-lg font-medium hover:bg-indigo-700 transition-colors"
+          className="btn btn-primary text-lg mt-6"
         >
           Get Started - It's Free!
         </button>
@@ -383,64 +419,68 @@ const JobTracker: React.FC = () => {
   );
 
   const renderLoginPage = () => (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4">
-      <div className="max-w-md w-full">
-        <div className="bg-white p-8 rounded-lg shadow-md">
-          <div className="text-center mb-8">
-            <h2 className="text-3xl font-bold text-gray-900">Sign In</h2>
-            <p className="text-gray-600 mt-2">Welcome back to JobTracker Pro</p>
-          </div>
-          
-          <form onSubmit={handleLogin} className="space-y-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Username</label>
-              <input
-                type="text"
-                value={loginForm.username}
-                onChange={(e) => setLoginForm({...loginForm, username: e.target.value})}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                required
-                disabled={loading}
-              />
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12">
+      <div className="container">
+        <div className="card shadow-lg" style={{maxWidth: '400px', margin: '0 auto'}}>
+          <div className="card-body">
+            <div className="text-center mb-6">
+              <h2 className="text-3xl font-bold text-gray-900">Sign In</h2>
+              <p className="text-gray-600 mt-2">Welcome back to JobTracker Pro</p>
             </div>
             
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Password</label>
-              <input
-                type="password"
-                value={loginForm.password}
-                onChange={(e) => setLoginForm({...loginForm, password: e.target.value})}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                required
+            <form onSubmit={handleLogin}>
+              <div className="form-group">
+                <label className="form-label">Username</label>
+                <input
+                  type="text"
+                  value={loginForm.username}
+                  onChange={(e) => setLoginForm({...loginForm, username: e.target.value})}
+                  className="form-input"
+                  required
+                  disabled={loading}
+                />
+              </div>
+              
+              <div className="form-group">
+                <label className="form-label">Password</label>
+                <input
+                  type="password"
+                  value={loginForm.password}
+                  onChange={(e) => setLoginForm({...loginForm, password: e.target.value})}
+                  className="form-input"
+                  required
+                  disabled={loading}
+                />
+              </div>
+              
+              <button
+                type="submit"
                 disabled={loading}
-              />
-            </div>
-            
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 transition-colors disabled:opacity-50"
-            >
-              {loading ? 'Signing In...' : 'Sign In'}
-            </button>
-          </form>
-          
-          <div className="mt-6 text-center">
-            <p className="text-gray-600">
-              Don't have an account?{' '}
-              <button 
-                onClick={() => updateURL({ page: 'register' })}
-                className="text-indigo-600 hover:text-indigo-700 font-medium"
+                className="btn btn-primary w-full"
               >
-                Sign up here
+                {loading ? 'Signing In...' : 'Sign In'}
               </button>
-            </p>
-            <button 
-              onClick={() => updateURL({ page: 'landing' })}
-              className="text-gray-500 hover:text-gray-700 mt-2 text-sm"
-            >
-              Back to Home
-            </button>
+            </form>
+            
+            <div className="mt-6 text-center">
+              <p className="text-gray-600">
+                Don't have an account?{' '}
+                <button 
+                  onClick={() => updateURL({ page: 'register' })}
+                  className="text-blue-600 hover:text-blue-700 font-medium"
+                  style={{background: 'none', border: 'none', cursor: 'pointer'}}
+                >
+                  Sign up here
+                </button>
+              </p>
+              <button 
+                onClick={() => updateURL({ page: 'landing' })}
+                className="text-gray-500 hover:text-gray-700 mt-2 text-sm"
+                style={{background: 'none', border: 'none', cursor: 'pointer'}}
+              >
+                Back to Home
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -448,66 +488,70 @@ const JobTracker: React.FC = () => {
   );
 
   const renderRegisterPage = () => (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4">
-      <div className="max-w-md w-full">
-        <div className="bg-white p-8 rounded-lg shadow-md">
-          <div className="text-center mb-8">
-            <h2 className="text-3xl font-bold text-gray-900">Create Account</h2>
-            <p className="text-gray-600 mt-2">Join JobTracker Pro today</p>
-          </div>
-          
-          <form onSubmit={handleRegister} className="space-y-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Username</label>
-              <input
-                type="text"
-                value={registerForm.username}
-                onChange={(e) => setRegisterForm({...registerForm, username: e.target.value})}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                required
-                disabled={loading}
-                minLength={3}
-              />
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12">
+      <div className="container">
+        <div className="card shadow-lg" style={{maxWidth: '400px', margin: '0 auto'}}>
+          <div className="card-body">
+            <div className="text-center mb-6">
+              <h2 className="text-3xl font-bold text-gray-900">Create Account</h2>
+              <p className="text-gray-600 mt-2">Join JobTracker Pro today</p>
             </div>
             
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Password</label>
-              <input
-                type="password"
-                value={registerForm.password}
-                onChange={(e) => setRegisterForm({...registerForm, password: e.target.value})}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                required
+            <form onSubmit={handleRegister}>
+              <div className="form-group">
+                <label className="form-label">Username</label>
+                <input
+                  type="text"
+                  value={registerForm.username}
+                  onChange={(e) => setRegisterForm({...registerForm, username: e.target.value})}
+                  className="form-input"
+                  required
+                  disabled={loading}
+                  minLength={3}
+                />
+              </div>
+              
+              <div className="form-group">
+                <label className="form-label">Password</label>
+                <input
+                  type="password"
+                  value={registerForm.password}
+                  onChange={(e) => setRegisterForm({...registerForm, password: e.target.value})}
+                  className="form-input"
+                  required
+                  disabled={loading}
+                  minLength={6}
+                />
+              </div>
+              
+              <button
+                type="submit"
                 disabled={loading}
-                minLength={6}
-              />
-            </div>
-            
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 transition-colors disabled:opacity-50"
-            >
-              {loading ? 'Creating Account...' : 'Create Account'}
-            </button>
-          </form>
-          
-          <div className="mt-6 text-center">
-            <p className="text-gray-600">
-              Already have an account?{' '}
-              <button 
-                onClick={() => updateURL({ page: 'login' })}
-                className="text-indigo-600 hover:text-indigo-700 font-medium"
+                className="btn btn-primary w-full"
               >
-                Sign in here
+                {loading ? 'Creating Account...' : 'Create Account'}
               </button>
-            </p>
-            <button 
-              onClick={() => updateURL({ page: 'landing' })}
-              className="text-gray-500 hover:text-gray-700 mt-2 text-sm"
-            >
-              Back to Home
-            </button>
+            </form>
+            
+            <div className="mt-6 text-center">
+              <p className="text-gray-600">
+                Already have an account?{' '}
+                <button 
+                  onClick={() => updateURL({ page: 'login' })}
+                  className="text-blue-600 hover:text-blue-700 font-medium"
+                  style={{background: 'none', border: 'none', cursor: 'pointer'}}
+                >
+                  Sign in here
+                </button>
+              </p>
+              <button 
+                onClick={() => updateURL({ page: 'landing' })}
+                className="text-gray-500 hover:text-gray-700 mt-2 text-sm"
+                style={{background: 'none', border: 'none', cursor: 'pointer'}}
+              >
+                Back to Home
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -524,15 +568,15 @@ const JobTracker: React.FC = () => {
 
     return (
       <div className="min-h-screen bg-gray-50">
-        <nav className="bg-white shadow-sm border-b">
-          <div className="max-w-7xl mx-auto px-4 py-4">
-            <div className="flex justify-between items-center">
-              <h1 className="text-2xl font-bold text-indigo-600">JobTracker Pro</h1>
-              <div className="flex items-center space-x-4">
-                <span className="text-gray-600">Welcome, {currentUser?.username}!</span>
+        <nav className="navbar">
+          <div className="container">
+            <div className="nav-content">
+              <h1 className="text-white font-bold">JobTracker Pro</h1>
+              <div className="flex items-center gap-4">
+                <span className="text-white">Welcome, {currentUser?.username}!</span>
                 <button 
                   onClick={handleLogout}
-                  className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 transition-colors"
+                  className="btn btn-danger btn-sm"
                 >
                   Logout
                 </button>
@@ -541,134 +585,152 @@ const JobTracker: React.FC = () => {
           </div>
         </nav>
 
-        <div className="max-w-7xl mx-auto px-4 py-8">
-          {loading && <div className="text-center py-4">Loading...</div>}
+        <div className="container py-8">
+          {loading && <div className="loading">Loading...</div>}
           
           {/* Stats Cards */}
-          <div className="grid md:grid-cols-4 gap-6 mb-8">
-            <div className="bg-white p-6 rounded-lg shadow-md">
-              <h3 className="text-lg font-semibold text-gray-700 mb-2">Total Applications</h3>
-              <p className="text-3xl font-bold text-indigo-600">{jobs.length}</p>
+          <div className="grid grid-cols-4 mb-8">
+            <div className="stat-card card">
+              <div className="card-body">
+                <h3 className="text-lg font-semibold text-gray-700 mb-2">Total Applications</h3>
+                <span className="stat-number text-blue-600">{jobs.length}</span>
+              </div>
             </div>
-            <div className="bg-white p-6 rounded-lg shadow-md">
-              <h3 className="text-lg font-semibold text-gray-700 mb-2">Applied</h3>
-              <p className="text-3xl font-bold text-yellow-600">{statusCounts.applied}</p>
+            <div className="stat-card card">
+              <div className="card-body">
+                <h3 className="text-lg font-semibold text-gray-700 mb-2">Applied</h3>
+                <span className="stat-number text-yellow-600">{statusCounts.applied}</span>
+              </div>
             </div>
-            <div className="bg-white p-6 rounded-lg shadow-md">
-              <h3 className="text-lg font-semibold text-gray-700 mb-2">Interviewed</h3>
-              <p className="text-3xl font-bold text-green-600">{statusCounts.interviewed}</p>
+            <div className="stat-card card">
+              <div className="card-body">
+                <h3 className="text-lg font-semibold text-gray-700 mb-2">Interviewed</h3>
+                <span className="stat-number text-green-600">{statusCounts.interviewed}</span>
+              </div>
             </div>
-            <div className="bg-white p-6 rounded-lg shadow-md">
-              <h3 className="text-lg font-semibold text-gray-700 mb-2">Rejected</h3>
-              <p className="text-3xl font-bold text-red-600">{statusCounts.rejected}</p>
+            <div className="stat-card card">
+              <div className="card-body">
+                <h3 className="text-lg font-semibold text-gray-700 mb-2">Rejected</h3>
+                <span className="stat-number text-red-600">{statusCounts.rejected}</span>
+              </div>
             </div>
           </div>
 
           {/* Controls */}
-          <div className="bg-white p-6 rounded-lg shadow-md mb-6">
-            <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
-              <div className="flex flex-col md:flex-row gap-4 items-center">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
-                  <input
-                    type="text"
-                    placeholder="Search by company or role..."
-                    value={urlParams.search || ''}
-                    onChange={(e) => updateURL({ search: e.target.value })}
-                    className="pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  />
-                </div>
-                
-                <div className="flex items-center gap-2">
-                  <Filter size={20} className="text-gray-400" />
-                  <select
-                    value={urlParams.filter}
-                    onChange={(e) => updateURL({ filter: e.target.value })}
-                    className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          <div className="card mb-6">
+            <div className="card-body">
+              <div className="controls-section">
+                <div className="controls-left">
+                  <div className="search-container">
+                    <div className="search-icon">
+                      <SearchIcon />
+                    </div>
+                    <input
+                      type="text"
+                      placeholder="Search by company or role..."
+                      value={urlParams.search || ''}
+                      onChange={(e) => updateURL({ search: e.target.value })}
+                      className="form-input search-input"
+                    />
+                  </div>
+                  
+                  <div className="flex items-center gap-2">
+                    <FilterIcon />
+                    <select
+                      value={urlParams.filter}
+                      onChange={(e) => updateURL({ filter: e.target.value })}
+                      className="form-select"
+                    >
+                      <option value="all">All Status</option>
+                      <option value="Applied">Applied</option>
+                      <option value="Interviewed">Interviewed</option>
+                      <option value="Rejected">Rejected</option>
+                    </select>
+                  </div>
+                  
+                  <button
+                    onClick={() => updateURL({ sort: urlParams.sort === 'desc' ? 'asc' : 'desc' })}
+                    className="btn btn-outline flex items-center gap-2"
                   >
-                    <option value="all">All Status</option>
-                    <option value="Applied">Applied</option>
-                    <option value="Interviewed">Interviewed</option>
-                    <option value="Rejected">Rejected</option>
-                  </select>
+                    <ArrowUpDownIcon />
+                    Sort by Date ({urlParams.sort === 'desc' ? 'Newest' : 'Oldest'})
+                  </button>
                 </div>
                 
                 <button
-                  onClick={() => updateURL({ sort: urlParams.sort === 'desc' ? 'asc' : 'desc' })}
-                  className="flex items-center gap-2 px-3 py-2 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+                  onClick={() => {
+                    setShowJobForm(true);
+                    setEditingJob(null);
+                    resetJobForm();
+                  }}
+                  className="btn btn-primary flex items-center gap-2"
+                  disabled={loading}
                 >
-                  <ArrowUpDown size={16} />
-                  Sort by Date ({urlParams.sort === 'desc' ? 'Newest' : 'Oldest'})
+                  <PlusIcon />
+                  Add New Application
                 </button>
               </div>
-              
-              <button
-                onClick={() => {
-                  setShowJobForm(true);
-                  setEditingJob(null);
-                  resetJobForm();
-                }}
-                className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 transition-colors flex items-center gap-2"
-                disabled={loading}
-              >
-                <Plus size={20} />
-                Add New Application
-              </button>
             </div>
           </div>
 
           {/* Jobs List */}
-          <div className="space-y-4">
+          <div className="grid gap-4">
             {filteredJobs.length === 0 ? (
-              <div className="bg-white p-12 rounded-lg shadow-md text-center">
-                <p className="text-gray-500 text-lg">
-                  {jobs.length === 0 
-                    ? "No job applications found. Start by adding your first application!" 
-                    : "No applications match your current filters."}
-                </p>
+              <div className="empty-state card">
+                <div className="card-body">
+                  <p className="text-lg">
+                    {jobs.length === 0 
+                      ? "No job applications found. Start by adding your first application!" 
+                      : "No applications match your current filters."}
+                  </p>
+                </div>
               </div>
             ) : (
               filteredJobs.map((job) => (
-                <div key={job.id} className="bg-white p-6 rounded-lg shadow-md">
-                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <div className="flex-grow">
-                      <div className="flex items-center gap-3 mb-2">
-                        <h3 className="text-xl font-semibold text-gray-900">{job.role}</h3>
-                        <span className={`px-3 py-1 rounded-full text-sm font-medium border ${getStatusColor(job.status)}`}>
-                          {job.status}
-                        </span>
+                <div key={job.id} className="card">
+                  <div className="card-body">
+                    <div className="flex flex-col gap-4" style={{gap: '1rem'}}>
+                      <div className="flex items-center justify-between flex-wrap gap-4">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-3 mb-2 flex-wrap">
+                            <h3 className="text-xl font-semibold text-gray-900">{job.role}</h3>
+                            <span className={`status-badge ${getStatusClass(job.status)}`}>
+                              {job.status}
+                            </span>
+                          </div>
+                          <p className="text-lg text-gray-700 mb-1">{job.companyName}</p>
+                          <p className="text-sm text-gray-500">Applied on: {new Date(job.dateApplied).toLocaleDateString()}</p>
+                        </div>
+                        
+                        <div className="job-actions">
+                          <button
+                            onClick={() => {
+                              setSelectedJob(job);
+                              updateURL({ page: 'job-detail', jobId: job.id?.toString() });
+                            }}
+                            className="btn btn-sm bg-blue-100 text-blue-700 hover:bg-blue-200"
+                            title="View Details"
+                          >
+                            <EyeIcon />
+                          </button>
+                          <button
+                            onClick={() => startEditJob(job)}
+                            className="btn btn-sm bg-green-100 text-green-700 hover:bg-green-200"
+                            title="Edit"
+                            disabled={loading}
+                          >
+                            <EditIcon />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteJob(job.id!)}
+                            className="btn btn-sm bg-red-100 text-red-700 hover:bg-red-200"
+                            title="Delete"
+                            disabled={loading}
+                          >
+                            <TrashIcon />
+                          </button>
+                        </div>
                       </div>
-                      <p className="text-lg text-gray-700 mb-1">{job.companyName}</p>
-                      <p className="text-sm text-gray-500">Applied on: {new Date(job.dateApplied).toLocaleDateString()}</p>
-                    </div>
-                    
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => {
-                          setSelectedJob(job);
-                          updateURL({ page: 'job-detail', jobId: job.id?.toString() });
-                        }}
-                        className="bg-blue-100 text-blue-700 p-2 rounded-md hover:bg-blue-200 transition-colors"
-                        title="View Details"
-                      >
-                        <Eye size={16} />
-                      </button>
-                      <button
-                        onClick={() => startEditJob(job)}
-                        className="bg-green-100 text-green-700 p-2 rounded-md hover:bg-green-200 transition-colors"
-                        title="Edit"
-                        disabled={loading}
-                      >
-                        <Edit2 size={16} />
-                      </button>
-                      <button
-                        onClick={() => handleDeleteJob(job.id!)}
-                        className="bg-red-100 text-red-700 p-2 rounded-md hover:bg-red-200 transition-colors"
-                        title="Delete"
-                        disabled={loading}
-                      >
-                        <Trash2 size={16} />
-                      </button>
                     </div>
                   </div>
                 </div>
@@ -679,47 +741,48 @@ const JobTracker: React.FC = () => {
 
         {/* Job Form Modal */}
         {showJobForm && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-            <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-screen overflow-y-auto">
-              <div className="p-6">
-                <h2 className="text-2xl font-bold text-gray-900 mb-6">
+          <div className="modal-overlay">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h2 className="font-bold text-gray-900">
                   {editingJob ? 'Edit Job Application' : 'Add New Job Application'}
                 </h2>
-                
-                <form onSubmit={editingJob ? handleUpdateJob : handleAddJob} className="space-y-4">
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Company Name *</label>
+              </div>
+              <div className="modal-body">
+                <form onSubmit={editingJob ? handleUpdateJob : handleAddJob}>
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label className="form-label">Company Name *</label>
                       <input
                         type="text"
                         value={jobForm.companyName}
                         onChange={(e) => setJobForm({...jobForm, companyName: e.target.value})}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        className="form-input"
                         required
                         disabled={loading}
                       />
                     </div>
                     
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Role *</label>
+                    <div className="form-group">
+                      <label className="form-label">Role *</label>
                       <input
                         type="text"
                         value={jobForm.role}
                         onChange={(e) => setJobForm({...jobForm, role: e.target.value})}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        className="form-input"
                         required
                         disabled={loading}
                       />
                     </div>
                   </div>
                   
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Status *</label>
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label className="form-label">Status *</label>
                       <select
                         value={jobForm.status}
                         onChange={(e) => setJobForm({...jobForm, status: e.target.value as Job['status']})}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        className="form-select"
                         required
                         disabled={loading}
                       >
@@ -729,81 +792,81 @@ const JobTracker: React.FC = () => {
                       </select>
                     </div>
                     
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Date Applied *</label>
+                    <div className="form-group">
+                      <label className="form-label">Date Applied *</label>
                       <input
                         type="date"
                         value={jobForm.dateApplied}
                         onChange={(e) => setJobForm({...jobForm, dateApplied: e.target.value})}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        className="form-input"
                         required
                         disabled={loading}
                       />
                     </div>
                   </div>
                   
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Company Address</label>
+                  <div className="form-group">
+                    <label className="form-label">Company Address</label>
                     <input
                       type="text"
                       value={jobForm.companyAddress}
                       onChange={(e) => setJobForm({...jobForm, companyAddress: e.target.value})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      className="form-input"
                       disabled={loading}
                     />
                   </div>
                   
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Contact Details</label>
+                  <div className="form-group">
+                    <label className="form-label">Contact Details</label>
                     <input
                       type="text"
                       value={jobForm.contactDetails}
                       onChange={(e) => setJobForm({...jobForm, contactDetails: e.target.value})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      className="form-input"
                       placeholder="Phone, Email, or Contact Person"
                       disabled={loading}
                     />
                   </div>
                   
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Job Duties</label>
+                  <div className="form-group">
+                    <label className="form-label">Job Duties</label>
                     <textarea
                       value={jobForm.jobDuties}
                       onChange={(e) => setJobForm({...jobForm, jobDuties: e.target.value})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      className="form-textarea"
                       rows={3}
                       placeholder="Describe the job responsibilities..."
                       disabled={loading}
                     />
                   </div>
                   
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Requirements</label>
+                  <div className="form-group">
+                    <label className="form-label">Requirements</label>
                     <textarea
                       value={jobForm.requirements}
                       onChange={(e) => setJobForm({...jobForm, requirements: e.target.value})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      className="form-textarea"
                       rows={3}
                       placeholder="Skills, qualifications, experience required..."
                       disabled={loading}
                     />
                   </div>
                   
-                  <div className="flex gap-4 pt-4">
-                    <button
-                      type="submit"
-                      disabled={loading}
-                      className="bg-indigo-600 text-white px-6 py-2 rounded-md hover:bg-indigo-700 transition-colors disabled:opacity-50"
-                    >
-                      {loading ? 'Saving...' : editingJob ? 'Update Application' : 'Add Application'}
-                    </button>
+                  <div className="modal-actions">
                     <button
                       type="button"
                       onClick={resetJobForm}
                       disabled={loading}
-                      className="bg-gray-300 text-gray-700 px-6 py-2 rounded-md hover:bg-gray-400 transition-colors disabled:opacity-50"
+                      className="btn btn-secondary"
                     >
                       Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={loading}
+                      className="btn btn-primary"
+                    >
+                      {loading ? 'Saving...' : editingJob ? 'Update Application' : 'Add Application'}
                     </button>
                   </div>
                 </form>
@@ -823,21 +886,21 @@ const JobTracker: React.FC = () => {
 
     return (
       <div className="min-h-screen bg-gray-50">
-        <nav className="bg-white shadow-sm border-b">
-          <div className="max-w-7xl mx-auto px-4 py-4">
-            <div className="flex justify-between items-center">
-              <h1 className="text-2xl font-bold text-indigo-600">JobTracker Pro</h1>
-              <div className="flex items-center space-x-4">
+        <nav className="navbar">
+          <div className="container">
+            <div className="nav-content">
+              <h1 className="text-white font-bold">JobTracker Pro</h1>
+              <div className="flex items-center gap-4">
                 <button 
                   onClick={() => updateURL({ page: 'home' })}
-                  className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600 transition-colors"
+                  className="btn btn-secondary btn-sm"
                 >
                   Back to Home
                 </button>
-                <span className="text-gray-600">Welcome, {currentUser?.username}!</span>
+                <span className="text-white">Welcome, {currentUser?.username}!</span>
                 <button 
                   onClick={handleLogout}
-                  className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 transition-colors"
+                  className="btn btn-danger btn-sm"
                 >
                   Logout
                 </button>
@@ -846,25 +909,19 @@ const JobTracker: React.FC = () => {
           </div>
         </nav>
 
-        <div className="max-w-4xl mx-auto px-4 py-8">
-          <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-            <div className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white p-8">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h1 className="text-3xl font-bold mb-2">{selectedJob.role}</h1>
-                  <h2 className="text-xl opacity-90">{selectedJob.companyName}</h2>
-                </div>
-                <span className={`px-4 py-2 rounded-full text-sm font-medium border-2 border-white ${
-                  selectedJob.status === 'Applied' ? 'bg-yellow-500' :
-                  selectedJob.status === 'Interviewed' ? 'bg-green-500' : 'bg-red-500'
-                }`}>
-                  {selectedJob.status}
-                </span>
+        <div className="container py-8">
+          <div className="card shadow-lg">
+            <div className="job-detail-header">
+              <div>
+                <h1 className="text-3xl font-bold mb-2">{selectedJob.role}</h1>
+                <h2 className="text-xl">{selectedJob.companyName}</h2>
               </div>
+              <span className={`status-badge ${getStatusClass(selectedJob.status)}`} style={{padding: '0.5rem 1rem', fontSize: '0.875rem'}}>
+                {selectedJob.status}
+              </span>
             </div>
-
-            <div className="p-8">
-              <div className="grid md:grid-cols-2 gap-8 mb-8">
+            <div className="card-body">
+              <div className="grid grid-cols-2 gap-6 mb-8">
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900 mb-3">Application Details</h3>
                   <div className="space-y-2">
@@ -872,7 +929,6 @@ const JobTracker: React.FC = () => {
                     <p><span className="font-medium text-gray-700">Status:</span> {selectedJob.status}</p>
                   </div>
                 </div>
-
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900 mb-3">Company Information</h3>
                   <div className="space-y-2">
@@ -887,38 +943,38 @@ const JobTracker: React.FC = () => {
               </div>
 
               {selectedJob.jobDuties && (
-                <div className="mb-8">
+                <div className="detail-section">
                   <h3 className="text-lg font-semibold text-gray-900 mb-3">Job Duties</h3>
-                  <div className="bg-gray-50 p-4 rounded-md">
-                    <p className="text-gray-700 whitespace-pre-wrap">{selectedJob.jobDuties}</p>
+                  <div className="detail-content">
+                    <p className="text-gray-700" style={{whiteSpace: 'pre-wrap'}}>{selectedJob.jobDuties}</p>
                   </div>
                 </div>
               )}
 
               {selectedJob.requirements && (
-                <div className="mb-8">
+                <div className="detail-section">
                   <h3 className="text-lg font-semibold text-gray-900 mb-3">Requirements</h3>
-                  <div className="bg-gray-50 p-4 rounded-md">
-                    <p className="text-gray-700 whitespace-pre-wrap">{selectedJob.requirements}</p>
+                  <div className="detail-content">
+                    <p className="text-gray-700" style={{whiteSpace: 'pre-wrap'}}>{selectedJob.requirements}</p>
                   </div>
                 </div>
               )}
 
-              <div className="flex gap-4 pt-6 border-t">
+              <div className="flex gap-4 mt-6 pt-6" style={{borderTop: '1px solid #e5e7eb'}}>
                 <button
                   onClick={() => startEditJob(selectedJob)}
                   disabled={loading}
-                  className="bg-indigo-600 text-white px-6 py-2 rounded-md hover:bg-indigo-700 transition-colors flex items-center gap-2 disabled:opacity-50"
+                  className="btn btn-primary flex items-center gap-2"
                 >
-                  <Edit2 size={16} />
+                  <EditIcon />
                   Edit Application
                 </button>
                 <button
                   onClick={() => handleDeleteJob(selectedJob.id!)}
                   disabled={loading}
-                  className="bg-red-600 text-white px-6 py-2 rounded-md hover:bg-red-700 transition-colors flex items-center gap-2 disabled:opacity-50"
+                  className="btn btn-danger flex items-center gap-2"
                 >
-                  <Trash2 size={16} />
+                  <TrashIcon />
                   Delete Application
                 </button>
               </div>
@@ -937,7 +993,7 @@ const JobTracker: React.FC = () => {
         <p className="text-gray-500 mb-8">The page you're looking for doesn't exist.</p>
         <button 
           onClick={() => updateURL({ page: currentUser ? 'home' : 'landing' })}
-          className="bg-indigo-600 text-white px-6 py-3 rounded-md hover:bg-indigo-700 transition-colors"
+          className="btn btn-primary"
         >
           Go Home
         </button>
